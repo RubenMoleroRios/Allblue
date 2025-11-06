@@ -19,7 +19,9 @@ services:
     depends_on:
       allblue-db:
         condition: service_healthy
-
+    volumes:
+      - .:/var/www/html
+      
   allblue-db:
     container_name: allblue-db
     image: 'mysql/mysql-server:8.0'
@@ -42,6 +44,25 @@ services:
       test: [ "CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}" ]
       retries: 3
       timeout: 5s
+
+  phpmyadmin:
+    depends_on:
+      - allblue-db
+    image: phpmyadmin:5.2.2-apache
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./volumes/phpmyadmin/sessions:/sessions
+    environment:
+      PMA_HOST: ${SERVICE_DB_CONTAINER_NAME}
+      PMA_PORT: ${DB_PORT}
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+      PMA_ARBITRARY: 1
+    networks:
+      - net-backend
 
 networks:
   net-backend:

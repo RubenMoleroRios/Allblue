@@ -5,7 +5,7 @@ FROM php:8.2.29-apache
 WORKDIR /var/www/html
 
 # Copiar configuraciones
-COPY . /var/www/html/
+COPY /docker/xdebug.conf /tmp/xdebug.conf
 COPY /docker/php/php.ini /usr/local/etc/php/php.ini
 
 # Instalar dependencias necesarias
@@ -25,6 +25,11 @@ RUN apt-get install -y \
     g++ \
     make
 
+# Instalar Xdebug
+RUN pecl install xdebug && \
+    docker-php-ext-enable xdebug && \
+    cat /tmp/xdebug.conf >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
 RUN docker-php-ext-install mysqli && \
     docker-php-ext-enable mysqli && \
     a2enmod rewrite
@@ -32,4 +37,5 @@ RUN docker-php-ext-install mysqli && \
 
 # Expone los puertos
 EXPOSE 80 9003
+
 
